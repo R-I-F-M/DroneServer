@@ -1,0 +1,85 @@
+version: "3.8"
+services:
+  
+  web:
+    restart: always
+    build:
+      context: .
+      dockerfile: docker-prod/rest-api/Dockerfile
+    volumes:
+      - .:/usr/src/app
+      - static_data:/usr/src/app/static
+    
+    environment:
+      DATABASE_NAME: postgres
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: changeme
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      REDIS_URL: redis://redis:6379/0
+    networks:
+      - main
+      - postgres
+      - redis
+    ports:
+      - "8000:8000"
+  redis:
+    image: "redis:alpine"
+    networks:
+      - redis
+    ports:
+      - "6379:6379"
+  postgres:
+    container_name: postgres_container
+    image: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      PGDATA: /data/postgres
+      POSTGRES_DB: kingobet_db
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    networks:
+      - postgres
+    restart: unless-stopped
+    depends_on:
+      - postgres
+  nginx:
+    build: 
+      context : ./nginx
+      dockerfile: ./Dockerfile
+    ports:
+      - 80:80
+    depends_on:
+      - web
+    volumes:
+      - static_data:/var/www/html/static/
+    networks:
+      - main
+networks:
+  main:
+    driver : bridge
+  postgres:
+    driver: bridge
+  redis:
+    driver: bridge
+volumes:
+  static_data:
+  postgres:
+  pgadmin:
