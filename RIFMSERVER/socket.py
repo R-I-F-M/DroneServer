@@ -1,15 +1,8 @@
-# socket.py
-
 from django.urls import path
-from channels.routing import ProtocolTypeRouter, URLRouter
-from .consumers import consumers
+from .consumers import DroneConsumer
 
-websocket_urlpatterns = [
-    path('ws/drone/', consumers.DroneConsumer.as_asgi()),
+
+websocket_urlpatterns =[
+
+    path('ws/wsc/',DroneConsumer.as_asgi())
 ]
-
-application = ProtocolTypeRouter({
-    'websocket': URLRouter(
-        websocket_urlpatterns
-    ),
-})

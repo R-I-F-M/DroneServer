@@ -1,5 +1,3 @@
-# consumers.py
-
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 
@@ -11,10 +9,11 @@ class DroneConsumer(AsyncWebsocketConsumer):
         pass
 
     async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message = text_data_json.get('message')
+        print(text_data)
+        # text_data_json = json.loads(text_data)
+        # message = text_data_json.get('message')
 
-        if message == 'Connect Drone':
+        if text_data == 'ConnectDrone':
             # Respond with success message
             await self.send(text_data=json.dumps({
                 'status': 'success',
